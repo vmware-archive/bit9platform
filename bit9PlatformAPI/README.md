@@ -1,6 +1,17 @@
 ## **Introduction**
 
 This document is intended for programmers who want to write code to interact with Bit9 Platform using custom scripts or from other applications. Bit9 API is a RESTful API that can be consumed over HTTPS protocol using any language that can create get URI requests and post/put JSON requests as well as interpret JSON responses.
+By accessing and/or using the API and Documentation provided on this site, you hereby agree to the following terms:
+
+### **Disclaimer**
+ 
+You may access and use the API and Documentation only for your own internal business purposes and in connection with your authorized use of Bit9 software.  
+ 
+Title to the API and the Documentation, and all intellectual property rights applicable thereto, shall at all times remain solely and exclusively with Bit9 and Bit9’s licensors, and you shall not take any action inconsistent with such title.
+ 
+THE API AND RELATED DOCUMENTATION ARE PROVIDED “AS IS” WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+ 
+IN NO EVENT SHALL BIT9 BE LIABLE FOR SPECIAL, INCIDENTAL, CONSEQUENTIAL, EXEMPLARY OR OTHER INDIRECT DAMAGES OR FOR DIRECT DAMAGES ARISING OUT OF OR RESULTING FROM YOUR ACCESS OR USE OF THE API AND DOCUMENTATION, EVEN IF BIT9 IS ADVISED OF OR AWARE OF THE POSSIBILITY OF SUCH DAMAGES. 
 
 ### **Versioning**
 
@@ -73,11 +84,11 @@ Attributes: &offset=x&limit=y, where x is offset in data set, and y is maximum n
 
 Special values for limit are 0 and -1:
 
-- If 0 or if not specified: JSON with all results will be returned. Offset parameter is ignored in this case.&nbsp;
-- If -1, only result count will be returned, without actual results. Offset parameter is ignored in this case.&nbsp;
+- If not specified: First 1000 results will be returned.
+- If set to -1: Only result count will be returned, without actual results. Offset parameter is ignored in this case.
+- If set to 0: All results will be returned. Offset parameter is ignored in this case. 
+  Note that some result sets could be very large, resulting in query timeout. Therefore, unless you know that query will not return more than 1000 results, it is recommended to retrieve data in chunks using offset and limit.
 
-Note that, in some cases, data set could be very large, resulting in query timeout. Therefore, unless you know that query will not return more than 1000 results, it is recommended to retrieve data in chunks using offset and limit.  
-  
   
 Here is example on how to get result count from a query:
 
