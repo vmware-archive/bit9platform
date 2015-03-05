@@ -1,6 +1,20 @@
-import requests, json, datetime, time, sys, bit9api
 """
 This is a Python script for the VirusTotal Analyst Connector for Bit9 Security Platform.
+
+Copyright Bit9, Inc. 2014
+support@bit9.com
+
+
+Disclaimer
++++++++++++++++++++
+By accessing and/or using the samples scripts provided on this site (the "Scripts"), you hereby agree to the following terms:
+The Scripts are exemplars provided for purposes of illustration only and are not intended to represent specific
+recommendations or solutions for API integration activities as use cases can vary widely.
+THE SCRIPTS ARE PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED.  BIT9 MAKES NO REPRESENTATION
+OR OTHER AFFIRMATION OF FACT, INCLUDING BUT NOT LIMITED TO STATEMENTS REGARDING THE SCRIPTS' SUITABILITY FOR USE OR PERFORMANCE.
+IN NO EVENT SHALL BIT9 BE LIABLE FOR SPECIAL, INCIDENTAL, CONSEQUENTIAL, EXEMPLARY OR OTHER INDIRECT DAMAGES OR FOR DIRECT
+DAMAGES ARISING OUT OF OR RESULTING FROM YOUR ACCESS OR USE OF THE SCRIPTS, EVEN IF BIT9 IS ADVISED OF OR AWARE OF THE
+POSSIBILITY OF SUCH DAMAGES.
 
 Requirements
 +++++++++++++++++++
@@ -21,9 +35,15 @@ Configuring Connector
 Please update the script with appropriate vt_token, Bit9 server address and Bit9 token at the bottom of the script.
 
 
-Start the script. No paramters are required. It will process analysis requests from teh Bit9 Platform as long as it is running.
+Start the script. No parameters are required. It will process analysis requests from teh Bit9 Platform as long as it is running.
 Script execution can be terminated with ctrl+c.
 """
+
+import requests
+import datetime
+import time
+import sys
+import bit9api
 
 # -------------------------------------------------------------------------------------------------
 # VT connector class. Initialization where keys are specified is done at the bottom of the script
@@ -51,7 +71,7 @@ class virusTotalConnector(object):
 
     def start(self):
         # Register or update our connector (can be done multiple times - will be treated as update on subsequent times)
-        r = self.bit9.create('connector', {'name': 'VirusTotal', 'analysisName': 'VirusTotal',
+        r = self.bit9.create('v1/connector', {'name': 'VirusTotal', 'analysisName': 'VirusTotal',
                             'connectorVersion': '1.0', 'canAnalyze': 'true', 'analysisEnabled': 'true'})
         connectorId = str(r['id'])
 
@@ -59,7 +79,7 @@ class virusTotalConnector(object):
         while True:
             try:
                 # Check with Bit9 Platform if we have any analysis still pending
-                for i in self.bit9.read("pendingAnalysis", url_params="connectorId=" + connectorId):
+                for i in self.bit9.read("v1/pendingAnalysis", url_params="connectorId=" + connectorId):
                     self.processOneAnalysisRequest(i)
             except:
                 print(sys.exc_info()[0])
@@ -97,7 +117,7 @@ class virusTotalConnector(object):
             pa['analysisStatus'] = 1 # (status: Analyzing)
 
         # Update Bit9 status for this file
-        self.bit9.update('pendingAnalysis', pa)
+        self.bit9.update('v1/pendingAnalysis', pa)
         return scanId
 
     def reportResultToBit9(self, fileAnalysisId, scanResults):
@@ -142,7 +162,7 @@ class virusTotalConnector(object):
                 notification['malwareName'] += s['result']
                 n += 1
         # Send notification
-        self.bit9.create("notification", notification)
+        self.bit9.create("v1/notification", notification)
 
     def processOneAnalysisRequest(self, pa):
         # Use md5 hash if we have one. If not, use Sha256

@@ -1,30 +1,32 @@
-#
-# Bit9 Platform API
-# Copyright Bit9, Inc. 2014 
-# support@bit9.com
-#
+"""
+Python bindings for Bit9Platform API
+
+Copyright Bit9, Inc. 2014 
+support@bit9.com
+
+Disclaimer
++++++++++++++++++++
+By accessing and/or using the samples scripts provided on this site (the "Scripts"), you hereby agree to the following terms:
+The Scripts are exemplars provided for purposes of illustration only and are not intended to represent specific
+recommendations or solutions for API integration activities as use cases can vary widely.
+THE SCRIPTS ARE PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED.  BIT9 MAKES NO REPRESENTATION
+OR OTHER AFFIRMATION OF FACT, INCLUDING BUT NOT LIMITED TO STATEMENTS REGARDING THE SCRIPTS' SUITABILITY FOR USE OR PERFORMANCE.
+IN NO EVENT SHALL BIT9 BE LIABLE FOR SPECIAL, INCIDENTAL, CONSEQUENTIAL, EXEMPLARY OR OTHER INDIRECT DAMAGES OR FOR DIRECT
+DAMAGES ARISING OUT OF OR RESULTING FROM YOUR ACCESS OR USE OF THE SCRIPTS, EVEN IF BIT9 IS ADVISED OF OR AWARE OF THE
+POSSIBILITY OF SUCH DAMAGES.
+
+"""
 
 import json
 import requests
 
-
 class bit9Api(object):
-    """ Python bindings for Bit9Platform API 
-    Example:
-    import bit9api
-    cb = bit9api.bit9Api("https://<bit9 server address>", token="apitoken")
-    # get metadata for all svchost.exe's not from c:\\windows
-    procs = cb.process_search(r"process_name:svchost.exe -path:c:\\windows\\")  
-    for proc in procs['results']:
-        proc_detail = cb.process(proc['id'])
-        print proc_detail['process']['start'], proc_detail['process']['hostname'], proc_detail['process']['path']
-    """
     def __init__(self, server, ssl_verify=True, token=None):
         """ Requires:
                 server -    URL to the Bit9Platform server.  Usually the same as 
                             the web GUI.
                 sslVerify - verify server SSL certificate
-                token - this is for CLI API interface
+                token - this is token for API interface provided by Bit9 administrator
         """
 
         if not server.startswith("http"): 
@@ -34,6 +36,8 @@ class bit9Api(object):
             raise TypeError("Missing required authentication token.")
 
         self.server = server.rstrip("/")
+        if '/api/bit9platform' not in self.server:
+            self.server = self.server + '/api/bit9platform'
         self.sslVerify = ssl_verify
         self.tokenHeader = {'X-Auth-Token': token}
         self.tokenHeaderJson = {'X-Auth-Token': token, 'content-type': 'application/json'}
@@ -69,7 +73,10 @@ class bit9Api(object):
         url = self.server + '/' + api_obj + url_params
         r = requests.get(url, headers=self.tokenHeaderJson, verify=self.sslVerify)
         r.raise_for_status()
-        return r.json()
+        if r.text != '':
+            return r.json()
+        else:
+            return False
 
     # Create object using HTTP POST request. Note that this can also be used to update existing object
     def create(self, api_obj, data, url_params=''):
@@ -80,7 +87,10 @@ class bit9Api(object):
         url = self.server + '/' + api_obj + url_params
         r = requests.post(url, data=json.dumps(data), headers=self.tokenHeaderJson, verify=self.sslVerify)
         r.raise_for_status()
-        return r.json()
+        if r.text != '':
+            return r.json()
+        else:
+            return False
     
     # Update object using HTTP PUT request
     def update(self, api_obj, data, obj_id=0, url_params=''):
@@ -93,7 +103,10 @@ class bit9Api(object):
         url = self.server + '/' + api_obj + '/' + str(obj_id) + url_params
         r = requests.put(url, data=json.dumps(data), headers=self.tokenHeaderJson, verify=self.sslVerify)
         r.raise_for_status()
-        return r.json()
+        if r.text != '':
+            return r.json()
+        else:
+            return False
 
     # Delete object using HTTP DELETE request.
     def delete(self, api_obj, data=None, obj_id=0, url_params=''):

@@ -2,6 +2,21 @@
 """
 This is a Python script for the LastLine Analyst Connector for Bit9 Security Platform.
 
+Copyright Bit9, Inc. 2014 
+support@bit9.com
+
+
+Disclaimer
++++++++++++++++++++
+By accessing and/or using the samples scripts provided on this site (the “Scripts”), you hereby agree to the following terms:
+The Scripts are exemplars provided for purposes of illustration only and are not intended to represent specific 
+recommendations or solutions for API integration activities as use cases can vary widely.      
+THE SCRIPTS ARE PROVIDED “AS IS” WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED.  BIT9 MAKES NO REPRESENTATION 
+OR OTHER AFFIRMATION OF FACT, INCLUDING BUT NOT LIMITED TO STATEMENTS REGARDING THE SCRIPTS’ SUITABILITY FOR USE OR PERFORMANCE.  
+IN NO EVENT SHALL BIT9 BE LIABLE FOR SPECIAL, INCIDENTAL, CONSEQUENTIAL, EXEMPLARY OR OTHER INDIRECT DAMAGES OR FOR DIRECT 
+DAMAGES ARISING OUT OF OR RESULTING FROM YOUR ACCESS OR USE OF THE SCRIPTS, EVEN IF BIT9 IS ADVISED OF OR AWARE OF THE 
+POSSIBILITY OF SUCH DAMAGES.
+
 Requirements
 +++++++++++++++++++
 
@@ -80,7 +95,7 @@ class LastLineConnector:
             logging.info("Connected to LastLine API [%s]" % self.ll_api.url)
 
             # Register or update our connector
-            r = self.b9_api.create('connector', {'name': 'LastLine', 'analysisName': 'LastLine',
+            r = self.b9_api.create('v1/connector', {'name': 'LastLine', 'analysisName': 'LastLine',
                                 'connectorVersion': '1.0', 'canAnalyze': 'true', 'analysisEnabled': 'true'})
             connectorId = str(r['id'])
             logging.info("Connected to B9 API [%s]" % self.b9_api.server)
@@ -95,7 +110,7 @@ class LastLineConnector:
                 # Check with LL for any pending tasks
                 self.fetchCompletedTasks()
                 # Check with Bit9 Platform if we have any analysis still pending
-                for i in self.b9_api.read("pendingAnalysis", url_params="connectorId=" + connectorId):
+                for i in self.b9_api.read("v1/pendingAnalysis", url_params="connectorId=" + connectorId):
                     # Process all B9 pending analysis requests for LL
                     self.processOneAnalysisRequest(i)
             except:
@@ -175,7 +190,7 @@ class LastLineConnector:
             pa['analysisStatus'] = 1 # (status: Analyzing)
     
             # Update Bit9 status for this file
-            self.b9_api.update('pendingAnalysis', pa)
+            self.b9_api.update('v1/pendingAnalysis', pa)
         finally:
                 # Delete downloaded file without exception
                 if file != None:
@@ -260,7 +275,7 @@ class LastLineConnector:
             files.insert(0, file)
             notification['files'] = files
 
-        self.b9_api.create("notification", notification)
+        self.b9_api.create("v1/notification", notification)
         logging.debug("File analysis completed for '%s' [%s]: %s" % (fileName, md5, notification['type']))
 
     def fetchTaskResult(self, uuid, fileName):
@@ -378,7 +393,7 @@ class LastLineConnector:
             pa['analysisError'] = 'LastLine %s' % str(ex)
     
             # Update Bit9 status for this file
-            self.b9_api.update('pendingAnalysis', pa)
+            self.b9_api.update('v1/pendingAnalysis', pa)
 
 # -------------------------------------------------------------------------------------------------
 # Main body of the script
