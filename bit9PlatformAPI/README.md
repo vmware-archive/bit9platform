@@ -1,10 +1,10 @@
 ## **Introduction**
 
-This document is intended for programmers who want to write code to interact with Bit9 Platform using custom scripts or from other applications. Bit9 API is a RESTful API that can be consumed over HTTPS protocol using any language that can create get URI requests and post/put JSON requests as well as interpret JSON responses.
-By accessing and/or using the API and Documentation provided on this site, you hereby agree to the following terms:
+This document is intended for programmers who want to write code to interact with the Bit9 Platform using custom scripts or integrate with other applications. The Bit9 API is a RESTful API that can be consumed over the HTTPS protocol using any language that can issue GET/POST/PUT URI requests and interpret JSON responses.
 
 ### **Disclaimer**
  
+By accessing and/or using the API and Documentation provided on this site, you hereby agree to the following terms:
 You may access and use the API and Documentation only for your own internal business purposes and in connection with your authorized use of Bit9 software.  
  
 Title to the API and the Documentation, and all intellectual property rights applicable thereto, shall at all times remain solely and exclusively with Bit9 and Bit9’s licensors, and you shall not take any action inconsistent with such title.
@@ -19,18 +19,18 @@ Current version of Bit9 API is v1. All API calls are based in address https://<y
 
 ### **Authentication**
 
-Bit9 APIs are authenticated through the API token. This token has to be placed inside each HTTP request's 'X-Auth-Token' header. API token is tied to the console user. To obtain the API token, ask Bit9 Server administrator to generate special user and token for you. Best practice is to have separate console user with minimum required access controls for each API client.
+Bit9 APIs are authenticated through the API token. This token has to be placed inside each HTTP request 'X-Auth-Token' header. The API token is tied to the console user. To obtain the API token, ask the Bit9 Server administrator to generate special user and token for you. A good practice is to have separate console users with minimum required access controls for each API client.
 
 ### **Access Controls**
 
-API client has same access level as its corresponding console user. For example, in order to get access to the 'event' object, user associated with API token will need permission to view events. Required permissions are listed with each API in this document. If caller lacks required privileges, HTTP error 401 - Unauthorized will be returned.
+An API client has the same access level as its corresponding console user. For example, in order to get access to the 'event' object, the user associated with API token will need permission to view events. Required permissions are listed with each API in this document. If caller lacks the required permissions, HTTP error 401 - Unauthorized will be returned.
 
 ### **Responses**
 
-Successful calls will return either HTTP 200 - OK or HTTP 201 - Created, depending if request created a new object or just modified/deleted existing one.   
-In case of POST and PUT, response will contain body of the modified or created object in the content, and also URI of created or modified object in url property of the response.  
-In case of GET, response will contain body of the searched object(s) in the content.  
-Failed calls will return errors in range 400-599, most often:   
+Successful calls will return either HTTP 200 - OK or HTTP 201 - Created, depending if request modified/deleted an existing object or created a new object, respectively. 
+In case of POST and PUT, the response will contain the body of the modified or created object in the content, and the URI of the created or modified object in URL property of the response.
+In the case of GET, the response will contain the body of the searched object(s) in the content.
+Failed calls will return errors in the range 400-599.  This is usually one of the following: 
 HTTP 400 - Bad request - Usually means that request contains unexpected parameters. More details about error can be found in the response content.  
 HTTP 401 - Unauthorized - Either authentication (invalid token) or access control (missing RBAC) error.  
 HTTP 403 - Forbidden - Specified object cannot be accessed or changed.  
@@ -41,26 +41,26 @@ HTTP 503 - Service unavailable - Cannot return object at this moment because ser
 
 Searching is done through the GET request, by passing search elements as URL query parts:  
 v1/computer?q=_<query condition 1>_&q=_<query condition 1>_...&group=_<optional group term>_&sort=_<optional sort term>_&offset=_<optional offset>_&offset=_<optional limit>_  
-Following sections describe these query parts.
+The following sections describe these query parts.
 
 #### **Query Condition**
 
 Multiple conditions can be added, and each has to be satisfied for the result set.  
-Individual condition can have one or multiple subconditions, separated with '|' (pipe) symbol Condition contains three parts: name, operator and value.
+Individual conditions can have one or multiple subconditions, separated with '|' (pipe) symbol. A condition contains three parts: name, operator and value.
 
-- Name is any valid field in the object that is being queried&nbsp;
-- Operator is any of valid operators (see below). All operators consist of a single character&nbsp;
+- Name is any valid field in the object that is being queried.&nbsp;
+- Operator is any of valid operators (see below). All operators consist of a single character.&nbsp;
 - Value is compared with operator and depends on field type.&nbsp;
 
 Possible operators are:
 
-- : results in LIKE comparison for strings, and = comparisons for other types. Note that LIKE comparison for strings results in '=' comparison if string doesn't contain wildchars. String comparison is case insensitive.&nbsp;
-- ! results in NOT LIKE comparison for strings, and <> comparison for other types. Note that NOT LIKE comparison for strings results in '<>' comparison if string doesn't contain wildchars. String comparison is case insensitive. &nbsp;
-- < Less then - can be used for both strings and numerical values &nbsp;
-- > Greater then - can be used for both strings and numerical values &nbsp;
-- + logical AND operation (valid only for numerical values). True if value has all bits as in operand. This can be used to check existence of given flag in a field &nbsp;
+- : results in LIKE comparison for strings, and = comparisons for other types. Note that LIKE comparison for strings results in '=' comparison if the string doesn't contain wildchars. String comparison is case insensitive.&nbsp;
+- ! results in NOT LIKE comparison for strings, and <> comparison for other types. Note that NOT LIKE comparison for strings results in '<>' comparison if the string doesn't contain wildchars. String comparison is case insensitive. &nbsp;
+- < Less than - can be used for both strings and numerical values &nbsp;
+- > Greater than - can be used for both strings and numerical values &nbsp;
+- + logical AND operation (valid only for numerical values). True if value has all bits set as in operand. This can be used to check existence of given flag in a field &nbsp;
 - - logical NAND operation (valid only for numerical values). True if value has none of the bits in the operand. This can be used to check non-existence of given flag in a field &nbsp;
-- | separating values with | (pipe) symbol will cause both values ot be included in the condition. Example "q=fileName:test1.exe|test2.exe" will match all objects where filename is either test1.exe or test2.exe. Note that negative conditions (- and !) will exclude entries that match either of included values. &nbsp;
+- | separating values with | (pipe) symbol will cause both values to be included in the condition. Example "q=fileName:test1.exe|test2.exe" will match all objects where filename is either test1.exe or test2.exe. Note that negative conditions (- and !) will exclude entries that match either of included values. &nbsp;
 
 Example of valid filter segment:
 
