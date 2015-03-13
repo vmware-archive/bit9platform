@@ -23,7 +23,7 @@ Requirements
 
 - VirusTotal API Key
 
-- Bit9 Platform Server 7.2.1 or better
+- Bit9 Platform Server 7.2.1 or later
 - Bit9 API Token (generated in Bit9 Console)
 
 Required python modules can be installed using tools such as easy_install or pip, e.g.
@@ -43,7 +43,7 @@ import requests
 import datetime
 import time
 import sys
-import bit9api
+from common import bit9api
 
 # -------------------------------------------------------------------------------------------------
 # VT connector class. Initialization where keys are specified is done at the bottom of the script
@@ -79,7 +79,7 @@ class virusTotalConnector(object):
         while True:
             try:
                 # Check with Bit9 Platform if we have any analysis still pending
-                for i in self.bit9.read("v1/pendingAnalysis", url_params="connectorId=" + connectorId):
+                for i in self.bit9.retrieve("v1/pendingAnalysis", url_params="connectorId=" + connectorId):
                     self.processOneAnalysisRequest(i)
             except:
                 print(sys.exc_info()[0])
@@ -163,6 +163,7 @@ class virusTotalConnector(object):
                 n += 1
         # Send notification
         self.bit9.create("v1/notification", notification)
+        print("VT analysis for fileAnalysis %d completed. VT result is %d%% malware (%s). Reporting status: %s" % (fileAnalysisId, positivesPerc, notification['malwareName'], notification['type']))
 
     def processOneAnalysisRequest(self, pa):
         # Use md5 hash if we have one. If not, use Sha256

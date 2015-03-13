@@ -27,7 +27,7 @@ Requirements
 - Last Line API Key
 - Last Line API Token
 
-- Bit9 Platform Server 7.2.1 or better
+- Bit9 Platform Server 7.2.1 or later
 - Bit9 API Token (generated in Bit9 Console)
 
 Required python modules can be installed using tools such as easy_install or pip, e.g.
@@ -53,7 +53,7 @@ import time
 import logging
 import json
 import analysis_apiclient
-import bit9api
+from common import bit9api
 
 # LastLine API parameters
 class LastLineAPI:
@@ -110,7 +110,7 @@ class LastLineConnector:
                 # Check with LL for any pending tasks
                 self.fetchCompletedTasks()
                 # Check with Bit9 Platform if we have any analysis still pending
-                for i in self.b9_api.read("v1/pendingAnalysis", url_params="connectorId=" + connectorId):
+                for i in self.b9_api.retrieve("v1/pendingAnalysis", url_params="connectorId=" + connectorId):
                     # Process all B9 pending analysis requests for LL
                     self.processOneAnalysisRequest(i)
             except:
