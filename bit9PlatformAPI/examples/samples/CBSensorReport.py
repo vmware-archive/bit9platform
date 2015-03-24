@@ -1,5 +1,5 @@
 """
-This is a sample Python script that locally approves all unapproved files for computers in given policy, under the specific condition
+This is a sample Python script that reports on CarbonBlack sensors on computers with Bit9 Platform agent
 
 Copyright Bit9, Inc. 2015
 support@bit9.com
@@ -29,7 +29,6 @@ Required python modules can be installed using tools such as easy_install or pip
 +++++++++++++++++++++++
 Please update the script with appropriate Bit9 server address and Bit9 token script.
 """
-
 from common import bit9api
 
 bit9 = bit9api.bit9Api(
@@ -38,18 +37,26 @@ bit9 = bit9api.bit9Api(
     ssl_verify=False  # Don't validate server's SSL certificate. Set to True unless using self-signed cert on IIS
 )
 
-# Find all computers in policy 'sales-1'
-comps = bit9.search('v1/computer', ['policyName:sales-1', 'deleted:false'])
-for c in comps:  # For each returned computer, get list of locally unapproved files
-    files = bit9.search('v1/fileInstance', ['computerId:'+str(c['id']), 'localState:1'])
-    n = 0
-    for f in files:  # For each returned file...
-        # Get its file catalog entry to get prevalence
-        fcat = bit9.retrieve('v1/fileCatalog', f['fileCatalogId'])
-        if fcat['prevalence'] >= 10:  # if prevalent enough...
-            f['localState'] = 2  # Approve locally
-            bit9.update('v1/fileInstance', f)
-            n += 1
-    if n > 0:
-        print("Locally approved %d files on computer %s" % (n, c['name']))
+# Get all computers with CB sensor and group them by sensor version
+compsWithCB = bit9.search('v1/computer',
+        [  # This array contains our condition
+            'deleted:false',  # not deleted
+            'uninstalled:false',  # not uninstalled
+            'lastPollDate>-7d',  # connected within last week
+            'cbSensorId!0',  # with sensor installed (!=0)
+            'cbSensorVersion!'  # where sensor version is not null (meaning, sensor was initialized)
+        ], group_by='cbSensorVersion')  # group by sensor version
+# Get count of all recently connected computers (not deleted or uninstalled)
+totalComps = bit9.search('v1/computer', ['deleted:false', 'uninstalled:false', 'lastPollDate>-7d'], limit=-1)["count"]
+
+print("Report by CB sensor version")
+print("-----------------------")
+if totalComps > 0:  # To avoid division by zero
+    totalWithSensor = 0
+    for group in compsWithCB:
+        print("%-15s : %s" % (group["value"], group["count"]))
+        totalWithSensor += group["count"]
+    print("-----------------------")
+    print("%-15s : %s" % ("Total Computers", totalComps))
+    print("%-15s : %s (%2.1f %%)" % ("With Sensor", totalWithSensor, totalWithSensor * 100.0 / totalComps))
 
