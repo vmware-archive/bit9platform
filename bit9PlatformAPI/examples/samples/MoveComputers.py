@@ -60,7 +60,8 @@ if len(destPolicies)==0:
 # Our condition is "All non-deleted computers in policy 'sales-1' that have IP address that DOES NOT start with 10.0.1
 comps = bit9.search('v1/computer', computerCondition)
 for c in comps:  # Move each returned computer to the local approval policy
-    print("Moving computer %s (IP: %s) from policy %s to local approval policy" % (c['name'], c['ipAddress'], c['policyName']))
+    print("Moving computer %s (IP: %s) from policy %s to policy %s" %
+          (c['name'], c['ipAddress'], c['policyName'], targetPolicyName))
     c['policyId'] = destPolicies[0]['id']
     bit9.update('v1/computer', c)
 
