@@ -67,11 +67,11 @@ class bit9Api(object):
 
     # Download file from server to the local file system from fileUpload object
     def retrieve_uploaded_file(self, obj_id, local_path):
-        return self.__download_file(obj_id, 'fileUpload', local_path)
+        return self.__download_file(obj_id, 'v1/fileUpload', local_path)
 
     # Download file from server to the local file system from pendingAnalysis object
     def retrieve_analyzed_file(self, obj_id, local_path):
-        return self.__download_file(obj_id, 'pendingAnalysis', local_path)
+        return self.__download_file(obj_id, 'v1/pendingAnalysis', local_path)
 
     # Retrieve object using HTTP GET request. Note that this function supports searching as well.
     # Optional parameters are obj_id that attempts to retrieve specific object, or url_params that can be used

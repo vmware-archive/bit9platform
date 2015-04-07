@@ -33,10 +33,15 @@ Please update the script with appropriate Bit9 server address and Bit9 token scr
 
 import time
 import datetime
-from common import bit9api
+import sys
+import os
+
+# Include our common folder, presumably peer of current folder
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'common'))
+import bit9api
 
 bit9 = bit9api.bit9Api(
-    "https://<my server address>",  # Replace with actual Bit9 server URL
+    "https://localhost",  # Replace with actual Bit9 server URL
     token="<enter your Bit9 API token here>",  # Replace with actual Bit9 user token for VT integration
     ssl_verify=False  # Don't validate server's SSL certificate. Set to True unless using self-signed cert on IIS
 )

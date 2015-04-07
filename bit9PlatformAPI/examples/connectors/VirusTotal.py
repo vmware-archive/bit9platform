@@ -43,7 +43,12 @@ import requests
 import datetime
 import time
 import sys
-from common import bit9api
+import os
+
+# Import our common bit9api (assumed to live in common folder, sibling to current folder)
+commonPath = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'common')
+sys.path.append(commonPath)
+import bit9api
 
 # -------------------------------------------------------------------------------------------------
 # VT connector class. Initialization where keys are specified is done at the bottom of the script
@@ -219,7 +224,7 @@ class virusTotalConnector(object):
 # Main body of the script
 
 bit9 = bit9api.bit9Api(
-    "https://<my server address>",  # Replace with actual Bit9 server URL
+    "https://localhost",  # Replace with actual Bit9 server URL
     token="<enter your Bit9 API token here>",  # Replace with actual Bit9 user token for VT integration
     ssl_verify=False  # Don't validate server's SSL certificate. Set to True unless using self-signed cert on IIS
 )
@@ -227,7 +232,7 @@ bit9 = bit9api.bit9Api(
 vtConnector = virusTotalConnector(
     bit9,
     vt_token='<enter your VT API key here>',  # Replace with your VT key
-    download_location = "c:\\test"   # Replace with actual local file location. If not set,
+    download_location="c:\\test"   # Replace with actual local file location. If not set,
                                 # we will try to access shared folder where this file resides
 )
 
