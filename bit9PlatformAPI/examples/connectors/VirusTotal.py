@@ -53,12 +53,20 @@ import bit9api
 # -------------------------------------------------------------------------------------------------
 # VT connector class. Initialization where keys are specified is done at the bottom of the script
 class virusTotalConnector(object):
-    def __init__(self, bit9, vt_token=None, download_location=None):
-        """ Requires:
-                server -    URL to the Bit9Platform server.  Usually the same as
-                            the web GUI.
-                sslVerify - verify server SSL certificate
-                token - this is for CLI API interface
+    def __init__(self, bit9, vt_token=None, connector_name='VirusTotal', allow_uploads=True, download_location=None):
+        """ Description of parameters:
+                bit9 - bit9api object
+                vt_token - API token provided by VirusTotal
+                connector_name - name of the connector. Defaults to 'VirusTotal'
+                allow_uploads - True to allow uploads of binaries to the VirusTotal servers. If set to False,
+                    only hash lookups will be done to te virusTotal
+                    Note: In case when allow_uploads is set to False  AND VirusTotal does not recognize the hash,
+                    associated Bit9 file analysis request will be cancelled
+                download_location - location that will hold the files uploaded from the Bit9 platform
+                    before they are sent to the VirusTotal. It is required only if allow_uploads is set to True
+                    If set to None, script will attempt to files uploaded from agents on the remote share. If
+                    remote share is unavailable, associated Bit9 file analysis request will end in Error state
+
         """
 
         if vt_token is None:
@@ -67,16 +75,20 @@ class virusTotalConnector(object):
         self.vt_url = 'https://www.virustotal.com/vtapi/v2'
         self.bit9 = bit9
         self.polling_frequency = 30 # seconds
+        self.connector_name = connector_name
 
         # Global dictionary to track our VT scheduled scans. We need this since it takes VT a while to process results
         # and we don't want to keep polling VT too often
         # Any pending results will be kept here, together with next polling time
         self.scheduledScans = {}
-        self.download_location = download_location.rstrip("\\")
+        # Download location.
+        if download_location:
+            self.download_location = download_location.rstrip("\\")
+        self.allow_uploads = allow_uploads
 
     def start(self):
         # Register or update our connector (can be done multiple times - will be treated as update on subsequent times)
-        r = self.bit9.create('v1/connector', {'name': 'VirusTotal', 'analysisName': 'VirusTotal',
+        r = self.bit9.create('v1/connector', {'name': self.connector_name, 'analysisName': self.connector_name,
                             'connectorVersion': '1.0', 'canAnalyze': 'true', 'analysisEnabled': 'true'})
         connectorId = str(r['id'])
 
@@ -88,9 +100,17 @@ class virusTotalConnector(object):
                     self.processOneAnalysisRequest(i)
             except:
                 print(sys.exc_info()[0])
-                print("\n*** Exception processing requests. Will try again in %d seconds." % (self.polling_frequency))
+                print("\n*** Exception processing requests. Will try again in %d seconds." % self.polling_frequency)
             # Sleep N seconds, and then all over again
             time.sleep(self.polling_frequency)
+
+    # This function unregisters the conector and deletes all its data
+    def unregister(self):
+        # Unregister our connector
+        r = self.bit9.search('v1/connector', ['name:'+self.connector_name])
+        if len(r)>0:
+            print("Unregistering connector %s and deleting all its data" % self.connector_name)
+            self.bit9.delete('v1/connector', r[0])
 
     def uploadFileToVT(self, pa):
         if self.download_location is not None:
@@ -205,13 +225,17 @@ class virusTotalConnector(object):
         elif scanResults.get('scan_id') is not None:
             # VT already knows about the file, but scan is not complete. We got scanId for future reference
             # Let's remember that and try again in 1 hour (per VT best practices)
-            scanId = scanResults['scan_id'];
+            scanId = scanResults['scan_id']
+        elif not self.allow_uploads:
+            # Uploads are not allowed. Cancel the analysis
+            pa['analysisStatus'] = 5 # (status: Cancelled)
+            self.bit9.update('v1/pendingAnalysis', pa)
         elif pa['uploaded'] == 1:
             # We have file and now we will upload it to VT
             scanId = self.uploadFileToVT(pa)
         else:
             # if we end here, it means that VT doesn't have file, and Bit9 hasn't uploaded it yet from the agent
-            # we will come back again in 30 seconds
+            # we will come back again when we reach this file next time around
             scanId = None
 
         if scanId is not None:
@@ -232,8 +256,9 @@ bit9 = bit9api.bit9Api(
 vtConnector = virusTotalConnector(
     bit9,
     vt_token='<enter your VT API key here>',  # Replace with your VT key
-    download_location="c:\\test"   # Replace with actual local file location. If not set,
-                                # we will try to access shared folder where this file resides
+    allow_uploads=True,  # Allow VT connector to upload binary files ot VirusTotal
+    download_location="c:\\test"  # Replace with actual local file location. If not set,
+                                  # script will try to access shared folder where this file resides
 )
 
 print("\n*** VT script starting")

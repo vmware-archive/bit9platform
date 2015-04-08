@@ -1,7 +1,7 @@
 """
 Python bindings for Bit9Platform API
 
-Copyright Bit9, Inc. 2014 
+Copyright Bit9, Inc. 2015 
 support@bit9.com
 
 Disclaimer
