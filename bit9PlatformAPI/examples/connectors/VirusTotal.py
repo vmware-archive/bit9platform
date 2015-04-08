@@ -104,7 +104,7 @@ class virusTotalConnector(object):
             # Sleep N seconds, and then all over again
             time.sleep(self.polling_frequency)
 
-    # This function unregisters the conector and deletes all its data
+    # This function unregisters the connector and deletes all its data
     def unregister(self):
         # Unregister our connector
         r = self.bit9.search('v1/connector', ['name:'+self.connector_name])
@@ -257,6 +257,7 @@ vtConnector = virusTotalConnector(
     bit9,
     vt_token='<enter your VT API key here>',  # Replace with your VT key
     allow_uploads=True,  # Allow VT connector to upload binary files ot VirusTotal
+    connector_name='VirusTotal',
     download_location="c:\\test"  # Replace with actual local file location. If not set,
                                   # script will try to access shared folder where this file resides
 )
