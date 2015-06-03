@@ -7,7 +7,7 @@ support@bit9.com
 Disclaimer
 +++++++++++++++++++
 By accessing and/or using the samples scripts provided on this site (the "Scripts"), you hereby agree to the following terms:
-The Scripts are exemplars provided for purposes of illustration only and are not intended to represent specific
+The Scripts are examples provided for purposes of illustration only and are not intended to represent specific
 recommendations or solutions for API integration activities as use cases can vary widely.
 THE SCRIPTS ARE PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED.  BIT9 MAKES NO REPRESENTATION
 OR OTHER AFFIRMATION OF FACT, INCLUDING BUT NOT LIMITED TO STATEMENTS REGARDING THE SCRIPTS' SUITABILITY FOR USE OR PERFORMANCE.
@@ -75,7 +75,7 @@ class bit9Api(object):
 
     # Retrieve object using HTTP GET request. Note that this function supports searching as well.
     # Optional parameters are obj_id that attempts to retrieve specific object, or url_params that can be used
-    # fir searching
+    # for searching
     def retrieve(self, api_obj, obj_id=0, url_params=''):
         if obj_id:
             api_obj = api_obj + '/' + str(obj_id)
