@@ -44,6 +44,8 @@ import datetime
 import time
 import sys
 import os
+import zipfile
+import shutil
 
 # Import our common bit9api (assumed to live in common folder, sibling to current folder)
 commonPath = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'common')
@@ -122,8 +124,18 @@ class virusTotalConnector(object):
             # Easier option, if Bit9 shared folder can be accessed directly
             localFilePath = pa['uploadPath']
 
+        try:
+            z = zipfile.ZipFile(localFilePath)
+            infp = z.open(z.filelist[0])
+            outfp = tempfile.NamedTemporaryFile()
+            shutil.copyfileobj(infp, outfp)
+        except Exception as e:
+            pass
+            # TODO: how to handle this error condition where the zip file cannot be read?
+
         scanId = None
-        files = {'file': open(localFilePath, 'rb')}
+        outfp.seek(0)
+        files = {'file': outfp}
         try:
             r = requests.post(self.vt_url + "/file/scan", files=files, params={'apikey': self.vt_token})
             isError = (r.status_code >= 400)
@@ -132,6 +144,8 @@ class virusTotalConnector(object):
                 scanId = r.json()['scan_id']
         except:
             isError = True
+        finally:
+            outfp.close()
 
         if isError:
             # Report to Bit9 that we had error analyzing this file. This means we will not try analysis again.
