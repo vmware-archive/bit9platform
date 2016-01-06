@@ -46,6 +46,7 @@ import sys
 import os
 import zipfile
 import shutil
+import os.path
 
 # Import our common bit9api (assumed to live in common folder, sibling to current folder)
 commonPath = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'common')
@@ -83,9 +84,11 @@ class virusTotalConnector(object):
         # and we don't want to keep polling VT too often
         # Any pending results will be kept here, together with next polling time
         self.scheduledScans = {}
+
         # Download location.
+        self.download_location = None
         if download_location:
-            self.download_location = download_location.rstrip("\\")
+            self.download_location = os.path.realpath(download_location)
         self.allow_uploads = allow_uploads
 
     def start(self):
@@ -115,7 +118,9 @@ class virusTotalConnector(object):
             self.bit9.delete('v1/connector', r[0])
 
     def uploadFileToVT(self, pa):
-        if self.download_location is not None:
+        scanId = None
+
+        if self.download_location:
             # This is if we want to locally download file from Bit9
             # (in the case shared folder is not accessible)
             localFilePath = self.download_location + "\\temp.zip"
@@ -125,15 +130,21 @@ class virusTotalConnector(object):
             localFilePath = pa['uploadPath']
 
         try:
+            # the zip file returned by Bit9 should have only one directory entry in it,
+            # the file to be analyzed. Extract that file for analysis. This is done since
+            # Bit9 retains the original file path information in the zip file, which may
+            # include sensitive/personal information that we don't want to disclose to VT.
             z = zipfile.ZipFile(localFilePath)
             infp = z.open(z.filelist[0])
             outfp = tempfile.NamedTemporaryFile()
             shutil.copyfileobj(infp, outfp)
         except Exception as e:
-            pass
-            # TODO: how to handle this error condition where the zip file cannot be read?
+            pa['analysisStatus'] = 4  # (status: Error)
+            pa['analysisError'] = 'Received error when attempting to unzip file from Bit9: %s' % str(e)
+            # Update Bit9 status for this file
+            self.bit9.update('v1/pendingAnalysis', pa)
+            return scanId
 
-        scanId = None
         outfp.seek(0)
         files = {'file': outfp}
         try:
@@ -272,8 +283,10 @@ vtConnector = virusTotalConnector(
     vt_token='<enter your VT API key here>',  # Replace with your VT key
     allow_uploads=True,  # Allow VT connector to upload binary files ot VirusTotal
     connector_name='VirusTotal',
-    download_location="c:\\test"  # Replace with actual local file location. If not set,
+    download_location=r'c:\test'  # Replace with actual local file location. If not set,
                                   # script will try to access shared folder where this file resides
+                                  # Note that you do not want to end your path with a backslash. ie. use
+                                  # r'c:\test' *not* r'c:\test\'.
 )
 
 print("\n*** VT script starting")
