@@ -45,6 +45,7 @@ import time
 import sys
 import os
 import zipfile
+import tempfile
 import shutil
 import os.path
 
@@ -281,7 +282,7 @@ bit9 = bit9api.bit9Api(
 vtConnector = virusTotalConnector(
     bit9,
     vt_token='<enter your VT API key here>',  # Replace with your VT key
-    allow_uploads=True,  # Allow VT connector to upload binary files ot VirusTotal
+    allow_uploads=True,  # Allow VT connector to upload binary files to VirusTotal
     connector_name='VirusTotal',
     download_location=r'c:\test'  # Replace with actual local file location. If not set,
                                   # script will try to access shared folder where this file resides
