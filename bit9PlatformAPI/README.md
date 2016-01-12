@@ -7,9 +7,9 @@ This document is intended for programmers who want to write code to interact wit
 By accessing and/or using the API and Documentation provided on this site, you hereby agree to the following terms:
 You may access and use the API and Documentation only for your own internal business purposes and in connection with your authorized use of Bit9 software.  
  
-Title to the API and the Documentation, and all intellectual property rights applicable thereto, shall at all times remain solely and exclusively with Bit9 and Bit9’s licensors, and you shall not take any action inconsistent with such title.
+Title to the API and the Documentation, and all intellectual property rights applicable thereto, shall at all times remain solely and exclusively with Bit9 and Bit9ï¿½s licensors, and you shall not take any action inconsistent with such title.
  
-THE API AND RELATED DOCUMENTATION ARE PROVIDED “AS IS” WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+THE API AND RELATED DOCUMENTATION ARE PROVIDED ï¿½AS ISï¿½ WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED.
  
 IN NO EVENT SHALL BIT9 BE LIABLE FOR SPECIAL, INCIDENTAL, CONSEQUENTIAL, EXEMPLARY OR OTHER INDIRECT DAMAGES OR FOR DIRECT DAMAGES ARISING OUT OF OR RESULTING FROM YOUR ACCESS OR USE OF THE API AND DOCUMENTATION, EVEN IF BIT9 IS ADVISED OF OR AWARE OF THE POSSIBILITY OF SUCH DAMAGES. 
 
@@ -113,7 +113,7 @@ Sorting is optional and can be defined with a single attribute: _&sort=xyz [ASC|
 Grouping is optional and can be defined with a single attribute: _&group=xyz_
 
 - There can be only one grouping field&nbsp;
-- When grouping is specified, sorting is ignored – output is automatically sorted by grouping field&nbsp;
+- When grouping is specified, sorting is ignored ï¿½ output is automatically sorted by grouping field&nbsp;
 
 Output of grouping is always array of objects with value and count fields. "Value" is group field value, and "count" is number of rows that have that name for the grouped field. Here is example:
 

@@ -35,7 +35,7 @@ Configuring Connector
 Please update the script with appropriate vt_token, Bit9 server address and Bit9 token at the bottom of the script.
 
 
-Start the script. No parameters are required. It will process analysis requests from teh Bit9 Platform as long as it is running.
+Start the script. No parameters are required. It will process analysis requests from the Bit9 Platform as long as it is running.
 Script execution can be terminated with ctrl+c.
 """
 
@@ -47,7 +47,6 @@ import os
 import zipfile
 import tempfile
 import shutil
-import os.path
 
 # Import our common bit9api (assumed to live in common folder, sibling to current folder)
 commonPath = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'common')
@@ -90,6 +89,8 @@ class virusTotalConnector(object):
         self.download_location = None
         if download_location:
             self.download_location = os.path.realpath(download_location)
+            if not os.path.exists(download_location):
+                os.makedirs(download_location)
         self.allow_uploads = allow_uploads
 
     def start(self):
@@ -104,9 +105,8 @@ class virusTotalConnector(object):
                 # Check with Bit9 Platform if we have any analysis still pending
                 for i in self.bit9.retrieve("v1/pendingAnalysis", url_params="connectorId=" + connectorId):
                     self.processOneAnalysisRequest(i)
-            except:
-                print(sys.exc_info()[0])
-                print("\n*** Exception processing requests. Will try again in %d seconds." % self.polling_frequency)
+            except Exception as e:
+                print("\n*** Exception: %s. Will try again in %d seconds." % (str(e), self.polling_frequency))
             # Sleep N seconds, and then all over again
             time.sleep(self.polling_frequency)
 
