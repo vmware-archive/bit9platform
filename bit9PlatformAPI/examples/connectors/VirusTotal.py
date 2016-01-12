@@ -35,7 +35,7 @@ Configuring Connector
 Please update the script with appropriate vt_token, Bit9 server address and Bit9 token at the bottom of the script.
 
 
-Start the script. No parameters are required. It will process analysis requests from teh Bit9 Platform as long as it is running.
+Start the script. No parameters are required. It will process analysis requests from the Bit9 Platform as long as it is running.
 Script execution can be terminated with ctrl+c.
 """
 
@@ -44,6 +44,9 @@ import datetime
 import time
 import sys
 import os
+import zipfile
+import tempfile
+import shutil
 
 # Import our common bit9api (assumed to live in common folder, sibling to current folder)
 commonPath = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'common')
@@ -81,9 +84,13 @@ class virusTotalConnector(object):
         # and we don't want to keep polling VT too often
         # Any pending results will be kept here, together with next polling time
         self.scheduledScans = {}
+
         # Download location.
+        self.download_location = None
         if download_location:
-            self.download_location = download_location.rstrip("\\")
+            self.download_location = os.path.realpath(download_location)
+            if not os.path.exists(download_location):
+                os.makedirs(download_location)
         self.allow_uploads = allow_uploads
 
     def start(self):
@@ -98,9 +105,8 @@ class virusTotalConnector(object):
                 # Check with Bit9 Platform if we have any analysis still pending
                 for i in self.bit9.retrieve("v1/pendingAnalysis", url_params="connectorId=" + connectorId):
                     self.processOneAnalysisRequest(i)
-            except:
-                print(sys.exc_info()[0])
-                print("\n*** Exception processing requests. Will try again in %d seconds." % self.polling_frequency)
+            except Exception as e:
+                print("\n*** Exception: %s. Will try again in %d seconds." % (str(e), self.polling_frequency))
             # Sleep N seconds, and then all over again
             time.sleep(self.polling_frequency)
 
@@ -113,7 +119,9 @@ class virusTotalConnector(object):
             self.bit9.delete('v1/connector', r[0])
 
     def uploadFileToVT(self, pa):
-        if self.download_location is not None:
+        scanId = None
+
+        if self.download_location:
             # This is if we want to locally download file from Bit9
             # (in the case shared folder is not accessible)
             localFilePath = self.download_location + "\\temp.zip"
@@ -122,8 +130,24 @@ class virusTotalConnector(object):
             # Easier option, if Bit9 shared folder can be accessed directly
             localFilePath = pa['uploadPath']
 
-        scanId = None
-        files = {'file': open(localFilePath, 'rb')}
+        try:
+            # the zip file returned by Bit9 should have only one directory entry in it,
+            # the file to be analyzed. Extract that file for analysis. This is done since
+            # Bit9 retains the original file path information in the zip file, which may
+            # include sensitive/personal information that we don't want to disclose to VT.
+            z = zipfile.ZipFile(localFilePath)
+            infp = z.open(z.filelist[0])
+            outfp = tempfile.NamedTemporaryFile()
+            shutil.copyfileobj(infp, outfp)
+        except Exception as e:
+            pa['analysisStatus'] = 4  # (status: Error)
+            pa['analysisError'] = 'Received error when attempting to unzip file from Bit9: %s' % str(e)
+            # Update Bit9 status for this file
+            self.bit9.update('v1/pendingAnalysis', pa)
+            return scanId
+
+        outfp.seek(0)
+        files = {'file': outfp}
         try:
             r = requests.post(self.vt_url + "/file/scan", files=files, params={'apikey': self.vt_token})
             isError = (r.status_code >= 400)
@@ -132,6 +156,8 @@ class virusTotalConnector(object):
                 scanId = r.json()['scan_id']
         except:
             isError = True
+        finally:
+            outfp.close()
 
         if isError:
             # Report to Bit9 that we had error analyzing this file. This means we will not try analysis again.
@@ -256,10 +282,12 @@ bit9 = bit9api.bit9Api(
 vtConnector = virusTotalConnector(
     bit9,
     vt_token='<enter your VT API key here>',  # Replace with your VT key
-    allow_uploads=True,  # Allow VT connector to upload binary files ot VirusTotal
+    allow_uploads=True,  # Allow VT connector to upload binary files to VirusTotal
     connector_name='VirusTotal',
-    download_location="c:\\test"  # Replace with actual local file location. If not set,
+    download_location=r'c:\test'  # Replace with actual local file location. If not set,
                                   # script will try to access shared folder where this file resides
+                                  # Note that you do not want to end your path with a backslash. ie. use
+                                  # r'c:\test' *not* r'c:\test\'.
 )
 
 print("\n*** VT script starting")
