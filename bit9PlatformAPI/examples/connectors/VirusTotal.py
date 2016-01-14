@@ -97,6 +97,11 @@ class virusTotalConnector(object):
         # Register or update our connector (can be done multiple times - will be treated as update on subsequent times)
         r = self.bit9.create('v1/connector', {'name': self.connector_name, 'analysisName': self.connector_name,
                             'connectorVersion': '1.0', 'canAnalyze': 'true', 'analysisEnabled': 'true'})
+
+        if not r:
+            log.fatal("Could not create connector on the Bit9 server")
+            return
+
         connectorId = str(r['id'])
 
         # Loop forever (until killed)
