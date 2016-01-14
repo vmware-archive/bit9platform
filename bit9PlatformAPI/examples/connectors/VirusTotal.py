@@ -259,16 +259,16 @@ class virusTotalConnector(object):
         elif not self.allow_uploads:
             # Uploads are not allowed. Cancel the analysis
             pa['analysisStatus'] = 5 # (status: Cancelled)
-            log.info("%s: VirusTotal has no information and we aren't allowed to upload it. Cancelling the analysis request.")
+            log.info("%s: VirusTotal has no information and we aren't allowed to upload it. Cancelling the analysis request." % fileHash)
             self.bit9.update('v1/pendingAnalysis', pa)
         elif pa['uploaded'] == 1:
             # We have file and now we will upload it to VT
-            log.info("%s: VirusTotal has no information on this hash. Uploading the file")
+            log.info("%s: VirusTotal has no information on this hash. Uploading the file" % fileHash)
             scanId = self.uploadFileToVT(pa)
         else:
             # if we end here, it means that VT doesn't have file, and Bit9 hasn't uploaded it yet from the agent
             # we will come back again when we reach this file next time around
-            log.info("%s: VirusTotal has no information on this hash. Waiting for Bit9 agent to upload it.")
+            log.info("%s: VirusTotal has no information on this hash. Waiting for Bit9 agent to upload it." % fileHash)
             pass
 
         if scanId:
