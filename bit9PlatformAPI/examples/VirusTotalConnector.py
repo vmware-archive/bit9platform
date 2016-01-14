@@ -1,15 +1,16 @@
+import logging
+logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.DEBUG)
+
 from common import bit9api
 from connectors import VirusTotal
 from ConfigParser import RawConfigParser
 import sys
-import logging
+import requests
 
 log = logging.getLogger(__name__)
 
 
 def main():
-    logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s')
-
     inifile = RawConfigParser({
         "bit9_server_url": "https://localhost",
         "bit9_server_sslverify": False,
@@ -40,6 +41,9 @@ def main():
     if not config["bit9_server_token"]:
         log.fatal("Cannot start without a valid Bit9 server API token, exiting")
         return 1
+
+    if not config["bit9_server_sslverify"]:
+        requests.packages.urllib3.disable_warnings()
 
     log.info("Configuration:")
     for k,v in config.iteritems():
