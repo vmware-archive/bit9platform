@@ -1,0 +1,12 @@
+[bridge]
+bit9_server_url=https://localhost
+bit9_server_sslverify=False
+bit9_server_token=xxxx
+vt_api_key=xxxx
+retrieve_files=True
+upload_binaries_to_vt=True
+download_location=c:\test
+connector_name=VirusTotal
+
+; uncomment to save logs to a file
+; log_file=c:\virustotal.log

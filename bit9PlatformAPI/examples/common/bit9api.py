@@ -19,6 +19,10 @@ POSSIBILITY OF SUCH DAMAGES.
 
 import json
 import requests
+import logging
+
+log = logging.getLogger(__name__)
+
 
 class bit9Api(object):
     def __init__(self, server, ssl_verify=True, token=None):
@@ -58,9 +62,9 @@ class bit9Api(object):
 
     def __check_result(self, r):
         if 400 <= r.status_code < 500:
-            print('%s Client Error: %s, %s' % (r.status_code, r.reason, r.text))
+            log.error('%s Client Error: %s, %s' % (r.status_code, r.reason, r.text))
         elif 500 <= r.status_code < 600:
-            print('%s Server Error: %s, %s' % (r.status_code, r.reason, r.text))
+            log.error('%s Server Error: %s, %s' % (r.status_code, r.reason, r.text))
         elif r.text != '':
             return r.json()
         return False
