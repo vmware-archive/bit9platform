@@ -8,6 +8,8 @@ log = logging.getLogger(__name__)
 
 
 def main():
+    logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s')
+
     inifile = RawConfigParser({
         "bit9_server_url": "https://localhost",
         "bit9_server_sslverify": False,
