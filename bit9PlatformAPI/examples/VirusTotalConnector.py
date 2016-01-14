@@ -1,13 +1,15 @@
 import logging
-logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.DEBUG)
-
 from common import bit9api
 from connectors import VirusTotal
 from ConfigParser import RawConfigParser
 import sys
 import requests
 
+# logging
+logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.DEBUG)
 log = logging.getLogger(__name__)
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
 def main():
@@ -20,6 +22,7 @@ def main():
         "upload_binaries_to_vt": False,
         "download_location": None,
         "connector_name": "VirusTotal",
+        "log_file": None,
     })
     inifile.read("virustotal.ini")
 
@@ -33,6 +36,14 @@ def main():
     config["download_location"] = inifile.get("bridge", "download_location")
     config["connector_name"] = inifile.get("bridge", "connector_name")
     config["upload_binaries_to_vt"] = inifile.getboolean("bridge", "upload_binaries_to_vt")
+
+    log_file = inifile.get("bridge", "log_file")
+    if log_file:
+        file_handler = logging.FileHandler(log_file)
+        formatter = logging.Formatter('%(asctime)s %(levelname)s:%(message)s')
+        file_handler.setFormatter(formatter)
+        file_handler.setLevel(logging.DEBUG)
+        log.addHandler(file_handler)
 
     if not config["vt_api_key"]:
         log.fatal("Cannot start without a valid VirusTotal API key, exiting")
