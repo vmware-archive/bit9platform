@@ -7,3 +7,6 @@ retrieve_files=True
 upload_binaries_to_vt=True
 download_location=c:\test
 connector_name=VirusTotal
+
+; uncomment to save logs to a file
+; log_file=c:\virustotal.log

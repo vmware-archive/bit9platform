@@ -50,8 +50,6 @@ import shutil
 
 import logging
 
-log = logging.getLogger(__name__)
-
 
 # -------------------------------------------------------------------------------------------------
 # VT connector class. Initialization where keys are specified is done at the bottom of the script
@@ -99,7 +97,7 @@ class virusTotalConnector(object):
                             'connectorVersion': '1.0', 'canAnalyze': 'true', 'analysisEnabled': 'true'})
 
         if not r:
-            log.fatal("Could not create connector on the Bit9 server")
+            log.fatal("Could not create connector on the Bit9 server. Are the bit9 server URL and API token correct?")
             return
 
         connectorId = str(r['id'])
@@ -295,6 +293,13 @@ if __name__ == '__main__':
         commonPath = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'common')
         sys.path.append(commonPath)
         import bit9api
+
+    logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.DEBUG)
+    log = logging.getLogger(__name__)
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+    requests.packages.urllib3.disable_warnings()
 
     bit9 = bit9api.bit9Api(
         "https://localhost",  # Replace with actual Bit9 server URL
