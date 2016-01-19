@@ -43,7 +43,7 @@ def main():
         formatter = logging.Formatter('%(asctime)s %(levelname)s:%(message)s')
         file_handler.setFormatter(formatter)
         file_handler.setLevel(logging.DEBUG)
-        log.addHandler(file_handler)
+        logging.getLogger().addHandler(file_handler)
 
     if not config["vt_api_key"]:
         log.fatal("Cannot start without a valid VirusTotal API key, exiting")
