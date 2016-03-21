@@ -33,7 +33,7 @@ class bit9Api(object):
                 token - this is token for API interface provided by Bit9 administrator
         """
 
-        if not server.startswith("http"): 
+        if not server.startswith("https"): 
             raise TypeError("Server must be URL: e.g, https://bit9server.local")
 
         if token is None: 
